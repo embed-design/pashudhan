@@ -8,7 +8,7 @@
     <string name="progressDescription">कृपया थांबा</string>
 
     <!--  MainLoginActivity  -->
-    <string name="mainLoginActivity_subHeading">शेतकऱ्यांचे खरे पैसे</string>
+    <string name="mainLoginActivity_subHeading">शेतकऱ्यांचे खरे धन</string>
     <string name="mainLoginActivity_phoneNumberLabel">फोन नंबर</string>
     <string name="mainLoginActivity_phoneNumberPlaceholder">फोन नंबर प्रविष्ट करा</string>
     <string name="mainLoginActivity_referralMessage">आपल्याकडे रेफरल कोड असल्यास</string>
@@ -47,12 +47,12 @@
 
 
     <!--  PashuSalesActivity  -->
-    <string name="pashuSalesActivity_heading">प्राणी विकणे</string>
+    <string name="pashuSalesActivity_heading">प्राणी विक्री</string>
     <string name="pashuSalesActivity_animalTypeLabel">कोणता प्राणी</string>
     <string name="pashuSalesActivity_animalBreedLabel">जाती</string>
     <string name="pashuSalesActivity_animalAgeLabel">वय</string>
     <string name="pashuSalesActivity_animalAgePlaceholder">वय प्रविष्ट करा</string>
-    <string name="pashuSalesActivity_animalByaatLabel">बात</string>
+    <string name="pashuSalesActivity_animalByaatLabel">वेत</string>
     <string name="pashuSalesActivity_animalMilkQuantityLabel">वर्तमान दूध (दररोज)</string>
     <string name="pashuSalesActivity_animalMilkQuantityPlaceholder">उदा: 10 लिटर</string>
     <string name="pashuSalesActivity_animalMilkCapacityLabel">दूध क्षमता (दररोज)</string>
@@ -82,15 +82,76 @@
 
     <!--  BottomNavActivity  -->
     <string name="fragment_pashuBazaar">पशु बाजार</string>
-    <string name="fragment_pashuKahani">प्राणी कथा</string>
+    <string name="fragment_pashuKahani">"पशु स्टोरी "</string>
     <string name="fragment_pashuSamwardhan">पशुसंवर्धन</string>
 
     <!--  PashuBazaarFragment  -->
     <string name="pashuBazaar_cardDummyTitle"><b>देसी गाय</b></string>
     <string name="pashuBazaar_fragmentDummyText">पशु बाजार</string>
-    <string name="pashuBazar_pashuSalesCTA">प्राणी विकणे</string>
+    <string name="pashuBazar_pashuSalesCTA">प्राणी विक्री</string>
     <string name="pashuBazar_filterCTA">फिल्टर</string>
 
     <string name="pashuStory_shareBtnLabel">शेअर करा</string>
+    <string name="pashuStory_addTextPlaceholder">काहीतरी टाइप करा</string>
+    <string name="pashuStory_addCommentPlaceholder">तुमचे विचार लिहा</string>
+    <string name="pashuStory_addCommentCTA">कॉमेंट</string>
+    <string name="profile_image_text">चित्र घाला</string>
+    <string name="profile_bio_text">स्वतःबद्दल काहीतरी लिहा</string>
+    <string name="save_profile">प्रोफाइल सेव करा</string>
+    <string name="logout_button">लॉग आउट</string>
+    <string name="logout_confirmMessage">तुम्हाला लॉग आउट करायचे आहे का?</string>
+    <string name="yes_button">होय</string>
+    <string name="no_button">नाही\n</string>
+    <string name="languageChange">भाषा बदलली</string>
+    <string name="notification_null">नवीन सूचना नाहीत</string>
+    <string name="upcoming">हा विभाग सध्या तयार केला जात आहे</string>
+    <string name="pashuDetails_informationTableTitle">प्राण्यांची माहिती</string>
+    <string name="pashuDetails_animalTypeLabel">कोणता प्राणी</string>
+    <string name="pashuDetails_animalBreedLabel">जाती</string>
+    <string name="pashuDetails_animalAgeLabel">वय</string>
+    <string name="pashuDetails_animalByaatLabel">वेत</string>
+    <string name="pashuDetails_animalMilkQuantityLabel">वर्तमान दूध (दररोज)</string>
+    <string name="pashuDetails_animalMilkCapacityLabel">दूध क्षमता (दररोज)</string>
+    <string name="sellerDetailHeading">मालिक</string>
+    <string name="sellerDetailNameLabel">नाव</string>
+    <string name="sellerDetailPhoneNumberLabel">फोन नंबर</string>
+    <string name="sellerDetailCallCTA">कॉल करा</string>
+    <string name="sellerDetailWhatsappCTA">व्हाट्सएप करा</string>
+    <string name="ownerName">नाव</string>
+    <string name="ownerPhone">फोन नंबर</string>
+    <string name="callCTA">कॉल करा</string>
+    <string name="whatsappCTA">व्हाट्सएप करा</string>
+    <string name="yourUploads">आपले अपलोड</string>
+    <string name="yourStories">आपले  स्टोरी</string>
+    <string name="yourFavourites">आवडता प्राणी</string>
+    <string name="pashuBazar_clearFilter"><b>पुसून टाका</b></string>
+    <string name="pashuBazar_filterMessage1">तू</string>
+    <string name="pashuBazar_filterMessage2">दाखवत आहे</string>
+    <string name="noLocationMessage">तुमचा पत्ता सांगा ⟶</string>
+    <string name="pashuStory_commentHeading">"कॉमेंट "</string>
+    <string name="userUploads">त्यांचे पशु अपलोड</string>
+    <string name="userStories">त्यांचे स्टोरीज़</string>
+    <string name="about">वापरकर्त्याबद्दल\n</string>
+    <string name="noFavouritesMessage">आवडते प्राणी नाहीत</string>
+    <string name="noPostsUploadedMessage">कृपया नवीन पोस्ट अपलोड करा</string>
+    <string name="noStoriesUploadedMessage">कृपया नवीन स्टोरी अपलोड करा</string>
+    <string name="storyLikedTitle">स्टोरी आवडली</string>
+    <string name="storyLikedMessage">तुमची स्टोरी आवडली</string>
+    <string name="postClickedTitle">पोस्ट पाहिली</string>
+    <string name="postClickedMessage">ने तुमची पोस्ट पाहिली</string>
+    <string name="storyCommentTitle">स्टोरी वर कॉमेंट</string>
+    <string name="storyCommentMessage">ने तुमच्या स्टोरी वर कॉमेंट  केली आहे</string>
+    <string name="informationTitle">माहिती हवी आहे</string>
+    <string name="informationMessage">ला तुमच्या प्राण्याबद्दल जाणून घ्यायचे आहे कृपया whatsapp तपासा</string>
+    <string name="samachar">पशु बातमी</string>
+    <string name="charcha">पशु चर्चा</string>
+    <string name="swasthya">पशु आरोग्य</string>
+    <string name="samacharHeading">तुमच्यासाठी ब्लॉग</string>
+    <string name="noBlogsUploadedMessage">कोणतेही ब्लॉग नाहीत\n</string>
+    <string name="noAnimalsUploadedMessage">कोणतीही पशु विकली जात नाहीत</string>
+    <string name="noStoriesMessage">गेल्या 24 तासात एकही स्टोरी अपलोड केलेली नाही</string>
+    <string name="comment_null">कोणतीही कॉमेंट नाही</string>
+    <string name="pashuBazar_clearFilterMessage">फिल्टर काढले गेले आहे</string>
+    <string name="pickPhotoHeading">फोटो अपलोड करा</string>
 
 </resources>

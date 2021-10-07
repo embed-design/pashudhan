@@ -3,6 +3,7 @@ package com.embed.pashudhan.Activities
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -14,8 +15,13 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.embed.pashudhan.BitmapUtils
+import com.embed.pashudhan.Fragments.PickImageFragment
 import com.embed.pashudhan.Helper
 import com.embed.pashudhan.R
+import com.google.firebase.FirebaseException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.firestore.*
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -26,6 +32,7 @@ class PashuSalesActivity : AppCompatActivity() {
     companion object {
         private val TAG = "PashusalesActivity==>"
         private val PICK_IMAGE = 100
+        private val CAPTURE_IMAGE = 101
     }
 
     private val PashudhanDB = Firebase.firestore
@@ -36,6 +43,8 @@ class PashuSalesActivity : AppCompatActivity() {
     private lateinit var mSelectedImage4: ImageView
     private var mImageURI: Uri? = null
     private lateinit var mUserUUID: String
+    private lateinit var mFirstName: String
+    private lateinit var mLastName: String
     private lateinit var mAnimalType: String
     private lateinit var mAnimalBreed: String
     private lateinit var mAnimalAge: String
@@ -47,6 +56,8 @@ class PashuSalesActivity : AppCompatActivity() {
     private lateinit var mProgressLayout: LinearLayout
     private lateinit var mProgressDescription: TextView
     private lateinit var mFormLayout: ScrollView
+    private lateinit var mUserLatitude: String
+    private lateinit var mUserLongitude: String
 
     // Get Access to Helper Functions
     private var helper: Helper = Helper()
@@ -68,8 +79,11 @@ class PashuSalesActivity : AppCompatActivity() {
         loadData()
 
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(this)
-        Log.d(TAG, sharedPref.contains(getString(R.string.sp_loginUserUUID)).toString())
-        mUserUUID = sharedPref.getString(getString(R.string.sp_loginUserUUID), "0").toString()
+        mUserUUID = FirebaseAuth.getInstance().currentUser?.phoneNumber!!
+        mFirstName = sharedPref.getString(getString(R.string.sp_userFirstName), "0").toString()
+        mLastName = sharedPref.getString(getString(R.string.sp_userLastName), "0").toString()
+        mUserLatitude = sharedPref.getString(getString(R.string.sp_userLatitude), "0").toString()
+        mUserLongitude = sharedPref.getString(getString(R.string.sp_userLongitude), "0").toString()
         if (mUserUUID == "0") {
             mUserUUID = intent.getStringExtra(getString(R.string.sp_loginUserUUID)).toString()
         }
@@ -103,33 +117,22 @@ class PashuSalesActivity : AppCompatActivity() {
         val selectPhotoButton3 = findViewById<Button>(R.id.selectPhotoButton3)
         val selectPhotoButton4 = findViewById<Button>(R.id.selectPhotoButton4)
 
+        mSelectedImage1 = findViewById(R.id.selectedImage1)
+        mSelectedImage2 = findViewById(R.id.selectedImage2)
+        mSelectedImage3 = findViewById(R.id.selectedImage3)
+        mSelectedImage4 = findViewById(R.id.selectedImage4)
+
         selectPhotoButton1.setOnClickListener {
-            setupPermissions()
-            mSelectedImage1 = findViewById(R.id.selectedImage1)
-            val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-            startActivityForResult(gallery, PICK_IMAGE)
-            mSelectedImageOrder.add(mSelectedImage1)
+            loadImage(mSelectedImage1)
         }
         selectPhotoButton2.setOnClickListener {
-            setupPermissions()
-            mSelectedImage2 = findViewById(R.id.selectedImage2)
-            val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-            startActivityForResult(gallery, PICK_IMAGE)
-            mSelectedImageOrder.add(mSelectedImage2)
+            loadImage(mSelectedImage2)
         }
         selectPhotoButton3.setOnClickListener {
-            setupPermissions()
-            mSelectedImage3 = findViewById(R.id.selectedImage3)
-            val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-            startActivityForResult(gallery, PICK_IMAGE)
-            mSelectedImageOrder.add(mSelectedImage3)
+            loadImage(mSelectedImage3)
         }
         selectPhotoButton4.setOnClickListener {
-            setupPermissions()
-            mSelectedImage4 = findViewById(R.id.selectedImage4)
-            val gallery = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-            startActivityForResult(gallery, PICK_IMAGE)
-            mSelectedImageOrder.add(mSelectedImage4)
+            loadImage(mSelectedImage4)
         }
 
         val uploadDataButton = findViewById<Button>(R.id.pashuSales_submitButton)
@@ -143,7 +146,7 @@ class PashuSalesActivity : AppCompatActivity() {
                 findViewById<EditText>(R.id.animalMilkQuantityEditText).text.toString()
 
             if (mAnimalType != "" && mAnimalBreed != "" && mAnimalAge != "" && mAnimalByaat != "" && mAnimalMilkCapacity != "" && mAnimalMilkQuantity != "" && mAnimalPrice != "") {
-                if (mImageList.size < 4) {
+                if (mImageList.size < 1) {
                     helper.showSnackbar(
                         this,
                         rootLayout,
@@ -166,6 +169,30 @@ class PashuSalesActivity : AppCompatActivity() {
 
     }
 
+    private fun loadImage(selectedImage: ImageView) {
+        setupPermissions()
+
+        fun pickImage() {
+            val pickPhoto = Intent(
+                Intent.ACTION_PICK,
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            )
+            startActivityForResult(pickPhoto , PICK_IMAGE)
+        }
+
+        fun capture() {
+            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            startActivityForResult(cameraIntent, CAPTURE_IMAGE)
+        }
+
+        PickImageFragment.newInstance(
+            ::pickImage,
+            ::capture
+        ).show(supportFragmentManager, PickImageFragment.TAG)
+
+        mSelectedImageOrder.add(selectedImage)
+    }
+
     private fun loadData() {
         var animalTypeList = HashMap<Any, Any>()
         var db = FirebaseFirestore.getInstance()
@@ -179,7 +206,7 @@ class PashuSalesActivity : AppCompatActivity() {
                 setDataIntoFields(animalTypeList)
             }
             .addOnFailureListener { exception ->
-                Log.d(TAG, "get failed with ", exception)
+                FirebaseCrashlytics.getInstance().recordException(exception)
             }
     }
 
@@ -207,7 +234,6 @@ class PashuSalesActivity : AppCompatActivity() {
                 ) {
                     mAnimalType = animalTypeList[position]
                     var animalBreedData = data.get(mAnimalType) as HashMap<*, *>
-                    Log.d(TAG, "$animalBreedData")
                     animalBreedList = animalBreedData.get("breed") as ArrayList<String>
                     animalTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     if (animalBreedList.get(0) != getString(R.string.pashuSalesActivity_defaultSpinnerOption)) {
@@ -269,7 +295,7 @@ class PashuSalesActivity : AppCompatActivity() {
             uploadTask.continueWithTask { task ->
                 if (!task.isSuccessful) {
                     task.exception?.let {
-                        Log.d(TAG, it.toString())
+                        FirebaseCrashlytics.getInstance().recordException(it)
                     }
                 }
                 imageRef.downloadUrl
@@ -281,11 +307,10 @@ class PashuSalesActivity : AppCompatActivity() {
                         uploadData(mUploadedImages)
                     }
                 } else {
-                    Log.d(TAG, "mUploadImages error")
+//                    Log.d(TAG, "mUploadImages error")
+                    FirebaseCrashlytics.getInstance().recordException(FirebaseException("FILE_UPLOAD_EXCEPTION"))
                 }
             }
-
-
         }
     }
 
@@ -294,14 +319,17 @@ class PashuSalesActivity : AppCompatActivity() {
         val animalEntry = hashMapOf<String, Any>(
             "timestamp" to "${System.currentTimeMillis() / 1000}",
             "user_uuid" to mUserUUID,
-            "animalType" to mAnimalType,
-            "animalBreed" to mAnimalBreed,
+            "animalType" to mAnimalType.trim(),
+            "animalBreed" to mAnimalBreed.trim(),
             "animalAge" to mAnimalAge,
             "animalByaat" to mAnimalByaat,
             "animalMilkQuantity" to mAnimalMilkQuantity,
             "animalMilkCapacity" to mAnimalMilkCapacity,
             "animalPrice" to mAnimalPrice,
-            "animalImages" to imageUriList
+            "animalImages" to imageUriList,
+            "name" to "$mFirstName $mLastName",
+            "location" to arrayListOf(mUserLatitude, mUserLongitude),
+            "favouritesOf" to arrayListOf<String>()
         )
 
 
@@ -326,7 +354,6 @@ class PashuSalesActivity : AppCompatActivity() {
                 }, 1000)
             }
             .addOnFailureListener {
-                Log.d(TAG, it.toString())
                 mProgressLayout.visibility = View.GONE
                 mFormLayout.visibility = View.VISIBLE
                 helper.showSnackbar(
@@ -352,6 +379,17 @@ class PashuSalesActivity : AppCompatActivity() {
                 }
             }
         }
+        if (resultCode == RESULT_OK && requestCode == CAPTURE_IMAGE) {
+            val photo = data?.extras?.get("data") as Bitmap
+            var bitmapUtils = BitmapUtils()
+            mImageURI = bitmapUtils.getImageUri(this, photo)
+            mImageList.add(mImageURI!!)
+            if (!mSelectedImageOrder.isNullOrEmpty()) {
+                if (!mImageList.isNullOrEmpty()) {
+                    mSelectedImageOrder.last().setImageURI(mImageList.last())
+                }
+            }
+        }
     }
 
     private fun setupPermissions() {
@@ -361,7 +399,7 @@ class PashuSalesActivity : AppCompatActivity() {
         )
 
         if (permission != PackageManager.PERMISSION_GRANTED) {
-            Log.i("Permission Status", "Permission to record denied")
+            Toast.makeText(this, "Need permissions to proceed further.", Toast.LENGTH_SHORT).show()
             makeRequest()
         }
     }

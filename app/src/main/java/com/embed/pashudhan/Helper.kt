@@ -1,14 +1,20 @@
 package com.embed.pashudhan
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.os.Build
 import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.palette.graphics.Palette
+import com.embed.pashudhan.DataModels.NotificationData
+import com.embed.pashudhan.DataModels.PushNotificationData
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 
 class Helper : AppCompatActivity() {
@@ -65,6 +71,7 @@ class Helper : AppCompatActivity() {
         config.setLocale(locale)
         ctx.createConfigurationContext(config)
         ctx.resources.updateConfiguration(config, ctx.resources.displayMetrics)
+
     }
 
     fun getRandomString(length: Int): String {
@@ -74,5 +81,57 @@ class Helper : AppCompatActivity() {
             .joinToString("")
     }
 
-    fun createPaletteSync(bitmap: Bitmap): Palette = Palette.from(bitmap).generate()
+    fun prepareNotification(notification: NotificationData, to: String) {
+        FirebaseFirestore.getInstance().collection("tokens").document(to).get().addOnSuccessListener {
+            if(it.exists()){
+                val token = it.data?.get("notificationToken") as String
+                PushNotificationData(
+                    notification,
+                    token
+                ).also { notification ->
+                    sendNotification(notification, to)
+                }
+            }
+        }
+    }
+
+    fun sendNotification(notification: PushNotificationData, toUser: String) = CoroutineScope(Dispatchers.IO).launch {
+        try {
+            val response = RetrofitInstance.api.postNotification(notification)
+            if(response.isSuccessful) {
+                FirebaseFirestore.getInstance().collection("notifications").add(
+                    hashMapOf<String, Any>(
+                        "title" to notification.data.title,
+                        "message" to notification.data.message,
+                        "sentTo" to toUser,
+                        "timestamp" to "${System.currentTimeMillis() / 1000}"
+                    )
+                ).addOnSuccessListener {
+//                    Log.d("Notification", "Notification Added")
+                }
+            }else {
+//                Log.e("APP==>", response.errorBody().toString())
+                FirebaseCrashlytics.getInstance().recordException(response.errorBody() as Throwable)
+
+            }
+        } catch(e: Exception) {
+//            Log.e("APP==>", e.toString())
+            FirebaseCrashlytics.getInstance().recordException(e)
+        }
+    }
+
+    fun updateFCMToken(token: String) {
+        val db = FirebaseFirestore.getInstance().collection("tokens")
+        val doc = db.document(FirebaseAuth.getInstance().currentUser?.phoneNumber!!)
+        doc.get().addOnSuccessListener {
+            if(it.exists()) {
+                doc.update(hashMapOf("notificationToken" to token, "timestamp" to "${System.currentTimeMillis() / 1000}") as Map<String, Any>)
+            }else {
+                doc.set(hashMapOf("notificationToken" to token, "timestamp" to "${System.currentTimeMillis() / 1000}"))
+            }
+        }.addOnFailureListener {
+            FirebaseCrashlytics.getInstance().recordException(it)
+        }
+    }
+
 }

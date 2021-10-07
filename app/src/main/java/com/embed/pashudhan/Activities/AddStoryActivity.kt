@@ -8,7 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.util.Log
+import android.provider.MediaStore
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Toast
@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import com.embed.pashudhan.Helper
 import com.embed.pashudhan.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.android.synthetic.main.add_story_activity_layout.*
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -35,6 +36,7 @@ class AddStoryActivity : AppCompatActivity() {
         private const val TAG = "CameraXBasic==>"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
+        private const val PICK_IMAGE = 11
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 
@@ -68,8 +70,15 @@ class AddStoryActivity : AppCompatActivity() {
         mCameraCaptureBtn = findViewById(R.id.cameraCaptureBtn)
         // Set up the listener for take photo button
         mCameraCaptureBtn.setOnClickListener {
-            Log.d(TAG, "CLICKED")
             takePhoto()
+        }
+
+        galleryBtn.setOnClickListener {
+            val pickPhoto = Intent(
+                Intent.ACTION_PICK,
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            )
+            startActivityForResult(pickPhoto , PICK_IMAGE)
         }
 
         outputDirectory = getOutputDirectory()
@@ -79,7 +88,6 @@ class AddStoryActivity : AppCompatActivity() {
 
     private fun takePhoto() {
         // Get a stable reference of the modifiable image capture use case
-        Log.d(TAG, "HI")
         val imageCapture = imageCapture ?: return
         val fileName = helper.getRandomString(15)
         // Create time-stamped output file to hold the image
@@ -97,12 +105,11 @@ class AddStoryActivity : AppCompatActivity() {
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+                    FirebaseCrashlytics.getInstance().recordException(exc)
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     val savedUri = Uri.fromFile(photoFile)
-                    Log.d(TAG, savedUri.toString())
                     val intent = Intent(this@AddStoryActivity, ViewStoryActivity::class.java)
                     intent.putExtra("imageUri", savedUri.toString())
                     startActivity(intent)
@@ -165,7 +172,7 @@ class AddStoryActivity : AppCompatActivity() {
         cameraProviderFuture.addListener(Runnable {
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-
+            val storyViewport = findViewById<PreviewView>(R.id.storyViewport)
             // Preview
             val preview = Preview.Builder()
                 .build()
@@ -196,7 +203,7 @@ class AddStoryActivity : AppCompatActivity() {
                 )
 
             } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+                FirebaseCrashlytics.getInstance().recordException(exc)
             }
 
         }, ContextCompat.getMainExecutor(this))
@@ -241,4 +248,14 @@ class AddStoryActivity : AppCompatActivity() {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
+            var mImageURI = data?.data
+            val intent = Intent(this@AddStoryActivity, ViewStoryActivity::class.java)
+            intent.putExtra("imageUri", mImageURI.toString())
+            startActivity(intent)
+            finish()
+        }
+    }
 }

@@ -1,5 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.160546875" />
+        <entry key="app/src/main/res/drawable/comment_view_pull.xml" value="0.18782894736842104" />
+        <entry key="app/src/main/res/drawable/comments_bottom_sheet_bg.xml" value="0.18782894736842104" />
+        <entry key="app/src/main/res/drawable/edit_text_bg.xml" value="0.18782894736842104" />
+        <entry key="app/src/main/res/drawable/ic_delete.xml" value="0.16217105263157894" />
+        <entry key="app/src/main/res/drawable/ic_gallery.xml" value="0.23026315789473684" />
+        <entry key="app/src/main/res/drawable/ic_gallery_white.xml" value="0.23026315789473684" />
+        <entry key="app/src/main/res/drawable/profile_image.xml" value="0.1944078947368421" />
+        <entry key="app/src/main/res/layout-v21/main_login_activity_layout.xml" value="0.1085972850678733" />
+        <entry key="app/src/main/res/layout/activity_open_blog.xml" value="0.20901639344262296" />
+        <entry key="app/src/main/res/layout/activity_pashu_bazar_card_item.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_pashu_details.xml" value="0.14173497267759563" />
+        <entry key="app/src/main/res/layout/activity_view_my_story.xml" value="0.17039473684210527" />
+        <entry key="app/src/main/res/layout/add_story_activity_layout.xml" value="0.12236842105263158" />
+        <entry key="app/src/main/res/layout/comment_card.xml" value="0.15427631578947368" />
+        <entry key="app/src/main/res/layout/fragment_comments.xml" value="0.15427631578947368" />
+        <entry key="app/src/main/res/layout/fragment_notifications.xml" value="0.15427631578947368" />
+        <entry key="app/src/main/res/layout/fragment_pashu_samachar.xml" value="0.20901639344262296" />
+        <entry key="app/src/main/res/layout/fragment_pashu_samwardhan.xml" value="0.17763157894736842" />
+        <entry key="app/src/main/res/layout/fragment_pashubazaar.xml" value="0.15427631578947368" />
+        <entry key="app/src/main/res/layout/fragment_pick_image.xml" value="0.22006578947368421" />
+        <entry key="app/src/main/res/layout/fragment_profile.xml" value="0.2" />
+        <entry key="app/src/main/res/layout/fragment_user_favourite_posts.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_user_uploaded_posts.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_user_uploaded_stories.xml" value="0.198046875" />
+        <entry key="app/src/main/res/layout/main_login_activity_layout.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/my_pashu_card_layout.xml" value="0.1375" />
+        <entry key="app/src/main/res/layout/my_story_card_grid_item.xml" value="0.22" />
+        <entry key="app/src/main/res/layout/notification_card.xml" value="0.15427631578947368" />
+        <entry key="app/src/main/res/layout/otp_verification_activity_layout.xml" value="0.1085972850678733" />
+        <entry key="app/src/main/res/layout/pashu_story_activity_layout.xml" value="0.12236842105263158" />
+        <entry key="app/src/main/res/layout/pashubazar_card_item.xml" value="0.1375" />
+        <entry key="app/src/main/res/layout/pick_photo_bottom_sheet.xml" value="0.22006578947368421" />
+        <entry key="app/src/main/res/layout/samachar_card.xml" value="0.20901639344262296" />
+        <entry key="app/src/main/res/layout/single_story_card_copy.xml" value="0.20355191256830601" />
+        <entry key="app/src/main/res/layout/story_container_copy.xml" value="0.14173497267759563" />
+        <entry key="app/src/main/res/layout/view_story_activity_layout.xml" value="0.16085526315789472" />
+        <entry key="app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.160546875" />
+      </map>
+    </option>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>

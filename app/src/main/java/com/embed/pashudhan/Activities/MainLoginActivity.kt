@@ -8,19 +8,22 @@ import android.os.Handler
 import android.preference.PreferenceManager
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import com.embed.pashudhan.DataModels.users
 import com.embed.pashudhan.Helper
 import com.embed.pashudhan.R
 import com.google.android.gms.auth.api.credentials.*
 import com.google.firebase.FirebaseException
 import com.google.firebase.FirebaseTooManyRequestsException
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.*
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -58,116 +61,114 @@ class MainLoginActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O_MR1)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Set Default Language as Hindi
         helper.changeAppLanguage(this, getString(R.string.MR_Locale))
-        // Get Shared Preferences to check if user is already logged in.
         val checkLoginSharedPref = PreferenceManager.getDefaultSharedPreferences(this)
-        val mUserUUID = checkLoginSharedPref.getString(getString(R.string.sp_loginUserUUID), "0")
+        with(checkLoginSharedPref.edit()) {
+            putString(
+                getString(R.string.sp_locale),
+                getString(R.string.MR_Locale)
+            )
+            apply()
+        }
 
-        // If user is already logged in => redirect to Pashubaazar::class.java
-        if (mUserUUID != "0") {
+        mFirebaseAuth = Firebase.auth
+        val currentUser = mFirebaseAuth.currentUser
+        updateUI(currentUser)
+    }
+
+    private fun updateUI(user: FirebaseUser? = mFirebaseAuth.currentUser) {
+        // Update UI if user found
+        if (user != null && !user.isAnonymous) {
             val intent = Intent(this, BottomNavigationActivity::class.java)
-            intent.putExtra(getString(R.string.sp_loginUserUUID), mUserUUID)
             startActivity(intent)
             finish()
-
-            // Else setup Firebase Auth and other login activities
-        } else {
-
-            setContentView(R.layout.main_login_activity_layout)
-
-            rootLayout = findViewById(R.id.main_activity_root_layout)
-            mPhoneNumberEditText = findViewById(R.id.phoneNumberEditText)
-            mSubmitBtn = findViewById(R.id.mainLoginActivity_submitButton)
-            mProgressBar = findViewById(R.id.mainLoginActivity_progressBar)
-            mFirebaseAuth = Firebase.auth
-
-            val currentUser = mFirebaseAuth.currentUser
-            updateUI(currentUser)
-
-
-            // Get Saved Phone Numbers to prevent users from manual editing
-            mPhoneNumberEditText.setOnClickListener {
-                if (mPhoneNumberEditText.text.toString() == "" && mOtherAccount == 0) phoneSelection()
-            }
-
-            mSubmitBtn.setOnClickListener {
-                mPhoneNumberVal = mPhoneNumberEditText.text.toString()
-                if (mPhoneNumberVal == "") {
-                    helper.showSnackbar(
-                        this,
-                        rootLayout,
-                        getString(R.string.mainLoginActivity_noPhoneNumberErrorMessage),
-                        helper.ERROR_STATE,
-                        getString(R.string.mainLoginActivity_noPhoneNumberErrorAction),
-                        this::phoneSelection,
-                        R.color.accent2
-                    )
-                } else if (mPhoneNumberVal.substring(0, 3) != "+91") {
-                    Log.d(TAG, mPhoneNumberVal.substring(0, 2))
-                    helper.showSnackbar(
-                        this,
-                        rootLayout,
-                        getString(R.string.mainLoginActivity_noCountryCodeErrorMessage),
-                        helper.ERROR_STATE
-                    )
-                } else {
-                    mPhoneNumberVal = mPhoneNumberEditText.text.toString()
-                    mProgressBar.visibility = View.VISIBLE
-                    startPhoneNumberVerification(phoneNumber = mPhoneNumberVal)
-                }
-            }
-
-            mPhoneAuthCallbackFunctions =
-                object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-
-                    // For Instant Verification, and Auto-Retrieval
-                    override fun onVerificationCompleted(credential: PhoneAuthCredential) {
-                        signInWithPhoneAuthCredential(credential)
-                    }
-
-                    // For Invalid Request (Phone Number not valid)
-                    override fun onVerificationFailed(e: FirebaseException) {
-
-                        var message: String = ""
-
-                        if (e is FirebaseAuthInvalidCredentialsException) {
-                            // Invalid request
-                            message = getString(R.string.tryAgainMessage)
-                        } else if (e is FirebaseTooManyRequestsException) {
-                            // The SMS quota for the project has been exceeded
-                            message = ""
-                            message = getString(R.string.mainLoginActivity_smsQuotaExceededMessage)
-                        }
-
-                        // Show a message and update the UI
-                        helper.showSnackbar(
-                            this@MainLoginActivity,
-                            rootLayout,
-                            message,
-                            helper.ERROR_STATE
-                        )
-                    }
-
-                    override fun onCodeSent(
-                        verificationId: String,
-                        token: PhoneAuthProvider.ForceResendingToken
-                    ) {
-                        // Save verification ID and resending token so we can use them later
-                        mVerificationIDVal = verificationId
-                        mResendToken = token
-                        val currentUser = mFirebaseAuth.currentUser
-                        callVerifyOTPUI(currentUser)
-                    }
-                }
+        }else {
+            loadLoginScreen()
         }
     }
 
-    /*
-    *  Helper Functions
-    *   To provide supported UI functionality for different cases.
-    *
-    * */
+    private fun loadLoginScreen() {
+        setContentView(R.layout.main_login_activity_layout)
+
+        rootLayout = findViewById(R.id.main_activity_root_layout)
+        mPhoneNumberEditText = findViewById(R.id.phoneNumberEditText)
+        mSubmitBtn = findViewById(R.id.mainLoginActivity_submitButton)
+        mProgressBar = findViewById(R.id.mainLoginActivity_progressBar)
+
+        // Get Saved Phone Numbers to prevent users from manual editing
+        mPhoneNumberEditText.setOnClickListener {
+            if (mPhoneNumberEditText.text.toString() == "" && mOtherAccount == 0) phoneSelection()
+        }
+
+        mSubmitBtn.setOnClickListener {
+            mPhoneNumberVal = mPhoneNumberEditText.text.toString()
+            if (mPhoneNumberVal == "") {
+                helper.showSnackbar(
+                    this,
+                    rootLayout,
+                    getString(R.string.mainLoginActivity_noPhoneNumberErrorMessage),
+                    helper.ERROR_STATE,
+                    getString(R.string.mainLoginActivity_noPhoneNumberErrorAction),
+                    this::phoneSelection,
+                    R.color.accent2
+                )
+            } else if (mPhoneNumberVal.substring(0, 3) != "+91") {
+                helper.showSnackbar(
+                    this,
+                    rootLayout,
+                    getString(R.string.mainLoginActivity_noCountryCodeErrorMessage),
+                    helper.ERROR_STATE
+                )
+            } else {
+                mPhoneNumberVal = mPhoneNumberEditText.text.toString()
+                mProgressBar.visibility = View.VISIBLE
+                startPhoneNumberVerification(phoneNumber = mPhoneNumberVal)
+            }
+        }
+
+        mPhoneAuthCallbackFunctions =
+            object : PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+
+                // For Instant Verification, and Auto-Retrieval
+                override fun onVerificationCompleted(credential: PhoneAuthCredential) {
+                    signInWithPhoneAuthCredential(credential)
+                }
+
+                // For Invalid Request (Phone Number not valid)
+                override fun onVerificationFailed(e: FirebaseException) {
+
+                    var message: String = ""
+
+                    if (e is FirebaseAuthInvalidCredentialsException) {
+                        // Invalid request
+                        message = getString(R.string.tryAgainMessage)
+                    } else if (e is FirebaseTooManyRequestsException) {
+                        // The SMS quota for the project has been exceeded
+                        message = ""
+                        message = getString(R.string.mainLoginActivity_smsQuotaExceededMessage)
+                    }
+
+                    // Show a message and update the UI
+                    helper.showSnackbar(
+                        this@MainLoginActivity,
+                        rootLayout,
+                        message,
+                        helper.ERROR_STATE
+                    )
+                }
+
+                override fun onCodeSent(
+                    verificationId: String,
+                    token: PhoneAuthProvider.ForceResendingToken
+                ) {
+                    // Save verification ID and resending token so we can use them later
+                    mVerificationIDVal = verificationId
+                    mResendToken = token
+                    val currentUser = mFirebaseAuth.currentUser
+                    callVerifyOTPUI(currentUser)
+                }
+            }
+    }
 
     // To setup OTP text watcher activity
     private fun setOTPFillingUX() {
@@ -344,12 +345,6 @@ class MainLoginActivity : AppCompatActivity() {
         }
     }
 
-
-    /*
-    *  Firebase AUTH
-    *
-    * */
-
     private fun startPhoneNumberVerification(phoneNumber: String) {
 
         val options = PhoneAuthOptions.newBuilder(mFirebaseAuth)
@@ -400,7 +395,7 @@ class MainLoginActivity : AppCompatActivity() {
                     val setLoginSharedPref =
                         PreferenceManager.getDefaultSharedPreferences(this@MainLoginActivity)
                     with(setLoginSharedPref.edit()) {
-                        putString(getString(R.string.sp_loginUserUUID), mPhoneNumberVal)
+                        putString(getString(R.string.sp_loginUserUUID), FirebaseAuth.getInstance().currentUser?.phoneNumber!!)
                         apply()
                     }
 
@@ -414,10 +409,42 @@ class MainLoginActivity : AppCompatActivity() {
                     var handler = Handler()
 
                     handler.postDelayed({
-                        val intent = Intent(this, UserRegisterationActivity::class.java)
-                        intent.putExtra(getString(R.string.sp_loginUserUUID), mPhoneNumberVal)
-                        startActivity(intent)
-                        finish()
+                        var db = FirebaseFirestore.getInstance()
+                        db.collection("users").document(FirebaseAuth.getInstance().currentUser?.phoneNumber!!).get().addOnSuccessListener {
+                            FirebaseMessaging.getInstance().token.addOnSuccessListener {
+                                helper.updateFCMToken(it)
+                            }
+                            if( it.exists() ) {
+                                val bundle = Bundle()
+                                bundle.putString(FirebaseAnalytics.Param.METHOD, "method")
+                                FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.LOGIN, bundle)
+                                var userDoc = it.toObject(users::class.java)
+                                with(setLoginSharedPref.edit()) {
+                                    putString(getString(R.string.sp_userFirstName), userDoc?.firstName)
+                                    putString(getString(R.string.sp_userLastName), userDoc?.lastName)
+                                    putString(getString(R.string.sp_profileImage), userDoc?.profileThumbnail)
+                                    putString(getString(R.string.sp_userPinCode), userDoc?.pinCode)
+                                    putString(getString(R.string.sp_userState), userDoc?.state)
+                                    putString(getString(R.string.sp_userDistrict), userDoc?.district)
+                                    putString(getString(R.string.sp_userVillage), userDoc?.village)
+                                    putString(getString(R.string.sp_userAddress), userDoc?.address)
+                                    putString(getString(R.string.sp_bio), userDoc?.bio)
+                                    putString(getString(R.string.sp_userLatitude), "${userDoc?.location?.get(0)}")
+                                    putString(getString(R.string.sp_userLongitude), "${userDoc?.location?.get(1)}")
+                                    apply()
+                                }
+                                val intent = Intent(this, BottomNavigationActivity::class.java)
+                                startActivity(intent)
+                                finish()
+                            } else {
+                                val bundle = Bundle()
+                                bundle.putString(FirebaseAnalytics.Param.METHOD, "method")
+                                FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle)
+                                val intent = Intent(this, UserRegisterationActivity::class.java)
+                                startActivity(intent)
+                                finish()
+                            }
+                        }
                     }, 1000)
 
                 } else {
@@ -442,9 +469,7 @@ class MainLoginActivity : AppCompatActivity() {
             }
     }
 
-    private fun updateUI(user: FirebaseUser? = mFirebaseAuth.currentUser) {
-        // Update UI if user found
-    }
+
 
     private fun callVerifyOTPUI(user: FirebaseUser? = mFirebaseAuth.currentUser) {
         mProgressBar.visibility = View.GONE

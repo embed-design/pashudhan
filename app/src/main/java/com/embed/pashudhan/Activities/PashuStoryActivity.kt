@@ -3,14 +3,19 @@ package com.embed.pashudhan.Activities
 import android.content.Intent
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.util.Log
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.embed.pashudhan.Adapters.*
 import com.embed.pashudhan.DataModels.*
+import com.embed.pashudhan.Helper
 import com.embed.pashudhan.R
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.firestore.*
+import kotlinx.android.synthetic.main.pashu_story_activity_layout.*
+import java.util.*
 
 
 class PashuStoryActivity : AppCompatActivity() {
@@ -21,34 +26,38 @@ class PashuStoryActivity : AppCompatActivity() {
     private lateinit var mStoryPageAdater: StoryPagerAdapter
     private lateinit var mStoryPageView: ViewPager2
     private lateinit var mCameraBtn: ImageButton
+    private lateinit var mBackButton: ImageButton
     private lateinit var PashudhanDB: FirebaseFirestore
-    private lateinit var mStoriesList: ArrayList<StoryData>
-    private lateinit var mStoriesUsersList: ArrayList<StoryUserDataModel>
+    private lateinit var mStoriesList: ArrayList<StoryItem>
     private lateinit var mUserUUID: String
-    private lateinit var mUserFullNameTextView: TextView
+    private var helper = Helper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.pashu_story_activity_layout)
 
         val checkLoginSharedPref = PreferenceManager.getDefaultSharedPreferences(this)
-        mUserUUID =
-            checkLoginSharedPref.getString(getString(R.string.sp_loginUserUUID), "0").toString()
+        mUserUUID = FirebaseAuth.getInstance().currentUser?.phoneNumber!!
+        var locale = checkLoginSharedPref.getString(getString(R.string.sp_locale), "mr")!!
+        helper.changeAppLanguage(this, locale)
         mStoryPageView = findViewById(R.id.storiesHolderViewPager)
         mStoriesList = arrayListOf()
-        mStoriesUsersList = arrayListOf()
         mStoryPageAdater =
             StoryPagerAdapter(
                 this@PashuStoryActivity,
-                mStoriesUsersList,
-                this::changeStory,
-                this::changeName
+                this,
+                mStoriesList,
+                this::setItem,
+                this::loadProfile
             )
 
         mStoryPageView.adapter = mStoryPageAdater
         mStoryPageView.orientation = ViewPager2.ORIENTATION_VERTICAL
 
-        mUserFullNameTextView = findViewById(R.id.userFullNameTextView)
+        mBackButton = findViewById(R.id.pashuStory_AppBarReturnBtn)
+        mBackButton.setOnClickListener {
+            this.onBackPressed()
+        }
 
         mCameraBtn = findViewById(R.id.cameraBtn)
         mCameraBtn.setOnClickListener {
@@ -60,126 +69,50 @@ class PashuStoryActivity : AppCompatActivity() {
         EventChangeListener()
     }
 
-    fun changeName(name: String) {
-        mUserFullNameTextView.text = name
+    private fun loadProfile(userUuid: String) {
+        val intent = Intent(this, BottomNavigationActivity::class.java)
+        intent.putExtra("userID", userUuid)
+        intent.putExtra("fragment", "profile")
+        startActivity(intent)
     }
 
-    fun changeStory(i: Int) {
-        mStoryPageView.currentItem = mStoryPageView.currentItem + i
+    fun setItem(i: Int) {
+        mStoryPageView.currentItem = i
     }
 
     private fun EventChangeListener() {
         PashudhanDB = FirebaseFirestore.getInstance()
-        PashudhanDB.collection("Stories")
+        PashudhanDB.collection("Stories").orderBy("timestamp", Query.Direction.DESCENDING)
             .addSnapshotListener(object : EventListener<QuerySnapshot> {
                 override fun onEvent(
                     value: QuerySnapshot?,
                     error: FirebaseFirestoreException?
                 ) {
                     if (error != null) {
-                        Log.e("Firestore error", error.message.toString())
+                        FirebaseCrashlytics.getInstance().recordException(error)
                         return
                     }
 
                     for (dc: DocumentChange in value?.documentChanges!!) {
                         if (dc.type == DocumentChange.Type.ADDED) {
-                            var newDocument = StoryUserDataModel()
-                            newDocument.id = dc.document.id
-                            var storyDocument = dc.document.toObject(StoryData::class.java)
-                            var storyList = storyDocument.storiesList!!
-                            var newList = arrayListOf<StoryItem>()
-                            storyList.forEach {
-                                var storyTimestamp = it.timestamp?.toLong()
-                                var currentTimestamp =
-                                    System.currentTimeMillis() / 1000
-
-                                var durationInHours =
-                                    (currentTimestamp.minus(storyTimestamp!!)) / 3600
-
-                                if (durationInHours < 24) {
-                                    newList.add(it)
-                                }
-                            }
-                            if (newList.size > 0) {
-                                newDocument.storiesList = newList
-                                mStoriesUsersList.add(newDocument)
-
-                                mStoryPageAdater.notifyDataSetChanged()
-                            }
+                            var newDoc = dc.document.toObject(StoryItem::class.java)
+                            newDoc.id = dc.document.id
+                            mStoriesList.add(newDoc)
                         }
+                    }
+                    mStoryPageAdater.notifyDataSetChanged()
+                    if(mStoriesList.isEmpty()) {
+                        NullStoriesPlaceholder.visibility = View.VISIBLE
+                        mStoryPageView.visibility = View.GONE
+                    }else {
+                        NullStoriesPlaceholder.visibility = View.GONE
+                        mStoryPageView.visibility = View.VISIBLE
                     }
                 }
             })
-
     }
 
-//    private fun EventChangeListener() {
-//        PashudhanDB = FirebaseFirestore.getInstance()
-//        PashudhanDB.collection("Stories")
-//            .addSnapshotListener(object : EventListener<QuerySnapshot> {
-//                override fun onEvent(
-//                    value: QuerySnapshot?,
-//                    error: FirebaseFirestoreException?
-//                ) {
-//                    if (error != null) {
-//                        Log.e("Firestore error", error.message.toString())
-//                        return
-//                    }
-//                    if (value?.documentChanges?.isNotEmpty()!!) {
-//                        for (dc: DocumentChange in value.documentChanges) {
-//                            if (dc.type == DocumentChange.Type.ADDED) {
-//                                var docId = dc.document.id
-//                                Log.d(TAG, docId)
-//                                var storyDocument = dc.document.toObject(StoryData::class.java)
-//                                val docRef = PashudhanDB.collection("users").document(docId)
-//                                docRef.get()
-//                                    .addOnSuccessListener { userDocument ->
-//                                        if (storyDocument != null) {
-//
-//                                            var storyList = storyDocument.storiesList!!
-//                                            var newList = arrayListOf<StoryItem>()
-//                                            storyList.forEach {
-//                                                var storyTimestamp = it.timestamp?.toLong()
-//                                                var currentTimestamp =
-//                                                    System.currentTimeMillis() / 1000
-//
-//                                                var durationInHours =
-//                                                    (currentTimestamp.minus(storyTimestamp!!)) / 3600
-//
-//                                                if (durationInHours < 24) {
-//                                                    newList.add(it)
-//                                                }
-//                                            }
-//                                            if (newList.size > 0) {
-//                                                var newDoc = StoryUserDataModel()
-//                                                newDoc.id = docId
-//                                                newDoc.storiesList = newList
-//                                                newDoc.userInfo =
-//                                                    userDocument.toObject(users::class.java)
-//                                                Log.d(TAG, "$newDoc")
-//                                                mStoriesUsersList.add(newDoc)
-////                                                storyDocument.storiesList = newList
-////                                                mStoriesList.add(storyDocument)
-//
-//                                                mStoryPageAdater.notifyDataSetChanged()
-//                                            }
-//                                        } else {
-//                                            Log.d(TAG, "No such document")
-//                                        }
-//                                    }
-//                                    .addOnFailureListener { exception ->
-//
-//                                    }
-//
-//
-////                            mStoriesList.add(document)
-//                            }
-//                        }
-//                    }
-//                }
-//            })
-//
-//    }
+
 }
 
 
