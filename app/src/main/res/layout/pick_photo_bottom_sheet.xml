@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pick_photo_bottom_sheet"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/sheetpull"
+        android:layout_width="40dp"
+        android:layout_height="8dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:background="@drawable/comment_view_pull" />
+
+    <LinearLayout
+        android:id="@+id/commentsProgressLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/bazaar_successIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_check_circle"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/bazaar_loadDataProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:progress="0" />
+
+        <TextView
+            android:id="@+id/bazaar_progressDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:text="@string/progressDescription"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/caption" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/commentsDataLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_below="@id/sheetpull">
+
+        <RelativeLayout
+            android:id="@+id/photoHeaderLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true">
+            <TextView
+                android:id="@+id/photoHeading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pickPhotoHeading"
+                android:textSize="@dimen/body2"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_alignParentStart="true"
+                />
+
+            <ImageButton
+                android:id="@+id/photosCloseButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_close"
+                android:background="@android:color/transparent"
+                android:layout_alignParentEnd="true" />
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/photoHeaderLayout">
+            <LinearLayout
+                android:id="@+id/picker_cameraButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:orientation="vertical"
+                android:layout_marginStart="20dp"
+                android:gravity="center">
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_camera"
+                    android:background="@android:color/transparent"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="20dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/button"
+                    android:text="@string/camera"/>
+
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/picker_galleryButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginStart="20dp"
+                android:layout_toEndOf="@id/picker_cameraButton">
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_gallery"
+                    android:background="@android:color/transparent"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="20dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/button"
+                    android:text="@string/gallery"/>
+
+            </LinearLayout>
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+</RelativeLayout>

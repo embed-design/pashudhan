@@ -23,7 +23,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.embed.pashudhan.BitmapUtils
-import com.embed.pashudhan.DataModels.CommentsData
 import com.embed.pashudhan.Helper
 import com.embed.pashudhan.R
 import com.giphy.sdk.core.models.Image
@@ -37,7 +36,8 @@ import com.giphy.sdk.ui.themes.GPHTheme
 import com.giphy.sdk.ui.themes.GridType
 import com.giphy.sdk.ui.views.GiphyDialogFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.firebase.firestore.FieldValue
+import com.google.firebase.FirebaseException
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
@@ -46,7 +46,6 @@ import com.rtugeek.android.colorseekbar.ColorSeekBar.OnColorChangeListener
 import ja.burhanrashid52.photoeditor.*
 import ja.burhanrashid52.photoeditor.PhotoEditor.OnSaveListener
 import java.io.File
-import java.io.Serializable
 
 
 class ViewStoryActivity : AppCompatActivity() {
@@ -102,7 +101,6 @@ class ViewStoryActivity : AppCompatActivity() {
         mUserLongitude = sharedPref.getString(getString(R.string.sp_userLongitude), "0").toString()
         mClickedPhotoEditorView = findViewById(R.id.photoEditorView)
         mClickedPhotoEditorView.source.setImageURI(mImageURI)
-
         rootLayout = findViewById(R.id.viewImageControlLayout)
         mShareButton = findViewById(R.id.shareStoryBtn)
         mShareButton.setOnClickListener {
@@ -224,11 +222,11 @@ class ViewStoryActivity : AppCompatActivity() {
         }
 
         override fun onDismissed(selectedContentType: GPHContentType) {
-            Log.d(TAG, "onDismissed")
+//            Log.d(TAG, "onDismissed")
         }
 
         override fun didSearchTerm(term: String) {
-            Log.d(TAG, "didSearchTerm $term")
+//            Log.d(TAG, "didSearchTerm $term")
         }
     }
 
@@ -290,7 +288,6 @@ class ViewStoryActivity : AppCompatActivity() {
             val photoFile = File(
                 outputDirectory, "${fileName}_${System.currentTimeMillis() / 1000}.jpg"
             )
-            Log.d(TAG, photoFile.absolutePath)
             mClickedPhotoEditor.saveAsFile(photoFile.absolutePath, object : OnSaveListener {
                 override fun onSuccess(imagePath: String) {
                     mImageURI = Uri.fromFile(photoFile)
@@ -303,7 +300,7 @@ class ViewStoryActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(exception: Exception) {
-                    Log.e("PhotoEditor", "Failed to save Image")
+                    FirebaseCrashlytics.getInstance().recordException(exception)
                 }
             })
         }
@@ -340,12 +337,11 @@ class ViewStoryActivity : AppCompatActivity() {
                     var uploadTask = imageRef.putFile(mImageURI)
                     uploadTask.addOnProgressListener {
                     }.addOnPausedListener {
-                        Log.d(TAG, "Upload is paused")
                     }
                     uploadTask.continueWithTask { task ->
                         if (!task.isSuccessful) {
                             task.exception?.let {
-                                Log.d(TAG, it.toString())
+                                FirebaseCrashlytics.getInstance().recordException(it)
                             }
                         }
                         imageRef.downloadUrl
@@ -353,9 +349,9 @@ class ViewStoryActivity : AppCompatActivity() {
                         if (task.isSuccessful) {
                             val downloadUri = task.result
                             uploadData("$downloadUri")
-                            Log.d(TAG, "Uploaded image")
                         } else {
                             Log.d(TAG, "mUploadImages error")
+                            FirebaseCrashlytics.getInstance().recordException(FirebaseException("FILE_UPLOAD_EXCEPTION"))
                         }
                     }
                     Toast.makeText(
@@ -378,106 +374,54 @@ class ViewStoryActivity : AppCompatActivity() {
     }
 
     private fun uploadData(downloadUri: String) {
-        Log.d(TAG, "Data Uploading now")
         var mStoryRootLayout = findViewById<RelativeLayout>(R.id.clickedImagesRootLayout)
 
         val storyItem = hashMapOf(
             "imageUri" to downloadUri,
             "timestamp" to "${System.currentTimeMillis() / 1000}",
-            "comments" to arrayListOf<CommentsData>(),
+            "comments" to arrayListOf<Any>(),
             "likes" to arrayListOf<String>(),
             "name" to mUserFullName,
-            "location" to arrayListOf<String>(mUserLatitude, mUserLongitude)
+            "location" to arrayListOf<String>(mUserLatitude, mUserLongitude),
+            "mUserUUID" to mUserUUID
         )
 
-        var storyItemToArray = ArrayList<HashMap<String, Serializable>>()
-        storyItemToArray.add(storyItem)
+        var newStoryRef = PashudhanDB.collection("Stories")
+        newStoryRef.add(storyItem)
+            .addOnSuccessListener {
+                findViewById<ProgressBar>(R.id.story_loadDataProgressBar).visibility =
+                    View.GONE
+                findViewById<TextView>(R.id.story_progressDescription).visibility =
+                    View.GONE
+                findViewById<ImageView>(R.id.story_successIcon).visibility =
+                    View.VISIBLE
+                helper.showSnackbar(
+                    this,
+                    mStoryRootLayout,
+                    getString(R.string.pashuSalesActivity_dataUploadSuccess),
+                    helper.SUCCESS_STATE
+                )
+                var handler = Handler()
 
-        val storiesList = hashMapOf(
-            "storiesList" to storyItemToArray
-        )
-
-        Log.d(TAG, "$storyItem")
-
-        var newStoryRef = PashudhanDB.collection("Stories").document(mUserUUID)
-        newStoryRef.get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    newStoryRef.update("storiesList", FieldValue.arrayUnion(storyItem))
-                        .addOnSuccessListener {
-
-                            findViewById<ProgressBar>(R.id.story_loadDataProgressBar).visibility =
-                                View.GONE
-                            findViewById<TextView>(R.id.story_progressDescription).visibility =
-                                View.GONE
-                            findViewById<ImageView>(R.id.story_successIcon).visibility =
-                                View.VISIBLE
-
-                            helper.showSnackbar(
-                                this,
-                                mStoryRootLayout,
-                                getString(R.string.pashuSalesActivity_dataUploadSuccess),
-                                helper.SUCCESS_STATE
-                            )
-                            var handler = Handler()
-
-                            handler.postDelayed({
-                                val intent = Intent(this, PashuStoryActivity::class.java)
-                                startActivity(intent)
-                                finish()
-                            }, 1000)
-                        }
-                        .addOnFailureListener {
-                            findViewById<LinearLayout>(R.id.story_ProgressLayout).visibility =
-                                View.GONE
-                            helper.showSnackbar(
-                                this,
-                                mStoryRootLayout,
-                                getString(R.string.tryAgainMessage),
-                                helper.ERROR_STATE
-                            )
-                            val intent = Intent(this, AddStoryActivity::class.java)
-                            startActivity(intent)
-                            finish()
-                        }
-                } else {
-                    newStoryRef.set(storiesList)
-                        .addOnSuccessListener {
-                            helper.showSnackbar(
-                                this,
-                                mStoryRootLayout,
-                                getString(R.string.pashuSalesActivity_dataUploadSuccess),
-                                helper.SUCCESS_STATE
-                            )
-                            findViewById<ProgressBar>(R.id.story_loadDataProgressBar).visibility =
-                                View.GONE
-                            findViewById<TextView>(R.id.story_progressDescription).visibility =
-                                View.GONE
-                            findViewById<ImageView>(R.id.story_successIcon).visibility =
-                                View.VISIBLE
-                            var handler = Handler()
-
-                            handler.postDelayed({
-                                setContentView(R.layout.pashu_story_activity_layout)
-                            }, 1000)
-                        }
-                        .addOnFailureListener {
-                            findViewById<LinearLayout>(R.id.story_ProgressLayout).visibility =
-                                View.GONE
-                            setContentView(R.layout.pashu_story_activity_layout)
-                            helper.showSnackbar(
-                                this,
-                                mStoryRootLayout,
-                                getString(R.string.tryAgainMessage),
-                                helper.ERROR_STATE
-                            )
-                        }
-                }
+                handler.postDelayed({
+                    val intent = Intent(this, PashuStoryActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }, 1000)
             }
-            .addOnFailureListener { exception ->
-                Log.d(TAG, "get failed with ", exception)
+            .addOnFailureListener {
+                findViewById<LinearLayout>(R.id.story_ProgressLayout).visibility =
+                    View.GONE
+                helper.showSnackbar(
+                    this,
+                    mStoryRootLayout,
+                    getString(R.string.tryAgainMessage),
+                    helper.ERROR_STATE
+                )
+                val intent = Intent(this, AddStoryActivity::class.java)
+                startActivity(intent)
+                finish()
             }
-
 
     }
 

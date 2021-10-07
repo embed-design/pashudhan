@@ -23,6 +23,7 @@ import com.embed.pashudhan.Helper
 import com.embed.pashudhan.R
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
 import java.io.IOException
 import java.util.*
 
@@ -62,7 +63,7 @@ class UserRegisterationActivity : AppCompatActivity() {
         // Initializing fused location client
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        mUserUUID = intent.getStringExtra(getString(R.string.sp_loginUserUUID)).toString()
+        mUserUUID = FirebaseAuth.getInstance().currentUser?.phoneNumber!!
 
         mFirstNameEditText = findViewById(R.id.firstNameEditText)
         mLastNameEditText = findViewById(R.id.lastNameEditText)
@@ -110,7 +111,8 @@ class UserRegisterationActivity : AppCompatActivity() {
                 "village" to villageVal,
                 "district" to districtVal,
                 "state" to stateVal,
-                "profileThumbnail" to ""
+                "profileThumbnail" to "",
+                "location" to arrayListOf("${currentLocation.latitude}", "${currentLocation.longitude}"),
             )
 
             PashudhanDB.addDocument(mUserUUID, "users", userRegistrationData)

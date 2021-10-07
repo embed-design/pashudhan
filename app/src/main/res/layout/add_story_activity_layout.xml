@@ -46,6 +46,16 @@
         android:src="@drawable/ic_flip_camera" />
 
     <ImageButton
+        android:id="@+id/galleryBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="40dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_gallery_white" />
+
+    <ImageButton
         android:id="@+id/flashBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

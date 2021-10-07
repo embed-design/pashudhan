@@ -23,31 +23,16 @@
             android:layout_height="match_parent"
             android:gravity="center_vertical">
 
-            <LinearLayout
+
+            <ImageButton
+                android:id="@+id/pashuStory_AppBarReturnBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"
                 android:layout_centerInParent="true"
-                android:gravity="center"
-                android:orientation="horizontal">
-
-                <ImageButton
-                    android:id="@+id/pashuStory_AppBarReturnBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/ic_baseline_chevron_left_24_black" />
-
-                <TextView
-                    android:id="@+id/userFullNameTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="नाम"
-                    android:textColor="@color/black"
-                    android:textSize="@dimen/body"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_baseline_chevron_left_24_black" />
 
 
             <LinearLayout
@@ -57,16 +42,7 @@
                 android:layout_marginRight="10dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:weightSum="2">
-
-                <ImageButton
-                    android:id="@+id/shareStoryWhatsappBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="10dp"
-                    android:layout_weight="1"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/ic_whatsapp" />
+                android:weightSum="1">
 
                 <ImageButton
                     android:id="@+id/cameraBtn"
@@ -90,6 +66,30 @@
         android:layout_below="@id/story_AppToolbar"
         android:layout_alignParentBottom="true"
         android:orientation="vertical" />
+
+    <LinearLayout
+        android:id="@+id/NullStoriesPlaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/app_icon" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/body2"
+            android:text="@string/noStoriesMessage"
+            android:textAlignment="center"
+            android:maxLines="2"
+            android:textColor="@color/black"
+            android:layout_marginTop="10dp"
+            />
+    </LinearLayout>
+
 
 </RelativeLayout>
 

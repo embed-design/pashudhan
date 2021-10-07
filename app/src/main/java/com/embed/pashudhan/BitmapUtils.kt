@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
@@ -16,7 +17,37 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 
+
 class BitmapUtils {
+
+    fun addWatermark(ctx: Context, bmp: Bitmap) : Bitmap {
+        var w = bmp.width
+        var h = bmp.height
+        var result = Bitmap.createBitmap(w, h, bmp.config)
+        var canvas = Canvas(result)
+        canvas.drawBitmap(bmp, 0f, 0f, null)
+
+        var waterMark = BitmapFactory.decodeResource(ctx.resources, R.drawable.app_bar_logo_wm)
+        waterMark = getResizedBitmap(waterMark, w/2, h/5)
+        var height =  h - (waterMark.height + 5)
+        canvas.drawBitmap(waterMark, 5f, height.toFloat(), null)
+        return result
+    }
+
+    fun getResizedBitmap(bm: Bitmap, newWidth: Int, newHeight: Int): Bitmap? {
+        val width = bm.width
+        val height = bm.height
+        val scaleWidth = newWidth.toFloat() / width
+        val scaleHeight = newHeight.toFloat() / height
+        // CREATE A MATRIX FOR THE MANIPULATION
+        val matrix = Matrix()
+        // RESIZE THE BIT MAP
+        matrix.postScale(scaleWidth, scaleHeight)
+        // "RECREATE" THE NEW BITMAP
+        return Bitmap.createBitmap(
+            bm, 0, 0, width, height, matrix, false
+        )
+    }
 
     fun getBitmapFromAssets(context: Context, fileName: String, width: Int, height: Int): Bitmap? {
         var assetManager: AssetManager = context.assets
@@ -50,6 +81,14 @@ class BitmapUtils {
         options.inSampleSize = calculateInSampleSize(options, width, height)
         options.inJustDecodeBounds = false
         return BitmapFactory.decodeFile(picturePath, options)
+    }
+
+    fun getImageUri(inContext: Context, inImage: Bitmap): Uri? {
+        val bytes = ByteArrayOutputStream()
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+        val path: String =
+            MediaStore.Images.Media.insertImage(inContext.contentResolver, inImage, Helper().getRandomString(15), null)
+        return Uri.parse(path)
     }
 
     // Method to compress a bitmap

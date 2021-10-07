@@ -5,10 +5,45 @@
     android:layout_height="match_parent"
     tools:context=".Fragments.PashuBazaarFragment">
 
-    <RelativeLayout
+    <LinearLayout
+        android:id="@+id/bazaar_progressLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/bazaar_successIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_check_circle"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/bazaar_loadDataProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:progress="0" />
+
+        <TextView
+            android:id="@+id/bazaar_progressDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:text="@string/progressDescription"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/caption" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/filterLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
 
         <Button
             android:id="@+id/pashuBazaar_filterBtn"
@@ -16,8 +51,10 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_margin="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
             android:background="@android:color/transparent"
             android:drawableStart="@drawable/ic_filter"
             android:drawableLeft="@drawable/ic_filter"
@@ -25,26 +62,37 @@
             android:textColor="@color/black"
             android:textSize="@dimen/button" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/pashuBazaar_clearFilterBtn"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/pashuBazaar_filterBtn"
-            android:layout_alignParentBottom="true"
-            android:orientation="vertical">
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@android:color/transparent"
+            android:drawableStart="@drawable/ic_close"
+            android:text="@string/pashuBazar_clearFilter"
+            android:textColor="@color/black"
+            android:visibility="gone"
+            android:textSize="@dimen/body" />
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/pashusanvardhan" />
-
-        </LinearLayout>
+    <RelativeLayout
+        android:id="@+id/bazaarDataLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@id/pashuBazaar_filterBtn">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/pashuBazaar_recView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/pashuBazaar_filterBtn" />
+            />
 
+    </RelativeLayout>
 
         <Button
             android:id="@+id/pashuSalesCTA"
@@ -52,9 +100,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@id/emptyView"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
             android:layout_marginEnd="10dp"
-            android:layout_marginRight="10dp"
             android:background="@drawable/pashu_sales_button_bg"
             android:paddingHorizontal="20dp"
             android:text="@string/pashuBazar_pashuSalesCTA"
@@ -66,6 +112,29 @@
             android:layout_width="match_parent"
             android:layout_height="10dp"
             android:layout_alignParentBottom="true" />
+
+
     </RelativeLayout>
+    <LinearLayout
+        android:id="@+id/NullAnimalPlaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/app_icon" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/body2"
+            android:text="@string/noAnimalsUploadedMessage"
+            android:textColor="@color/black"
+            android:layout_marginTop="10dp"
+            android:textAlignment="center"
+            android:maxLines="2"/>
+    </LinearLayout>
 
 </FrameLayout>

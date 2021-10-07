@@ -9,4 +9,6 @@ data class users(
     var state: String? = null,
     var village: String? = null,
     var profileThumbnail: String? = null,
+    var bio: String? = null,
+    var location: ArrayList<String>? = null,
 )

@@ -1,56 +1,161 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/comments_bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    app:layout_behavior="@string/bottom_sheet_behavior"
     tools:context=".Fragments.CommentsFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/comments_rv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+    <View
+        android:id="@+id/sheetpull"
+        android:layout_width="40dp"
+        android:layout_height="8dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="10dp"
+        android:background="@drawable/comment_view_pull" />
 
     <LinearLayout
-        android:id="@+id/addCommentLayout"
+        android:id="@+id/commentsProgressLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_above="@id/emptyView"
-        android:layout_alignParentEnd="true"
+        android:layout_height="match_parent"
         android:gravity="center"
-        android:orientation="horizontal"
-        android:layout_marginHorizontal="10dp"
-        android:layout_marginTop="20dp"
-        android:weightSum="2">
+        android:orientation="vertical"
+        android:visibility="gone">
 
-        <EditText
-            android:id="@+id/commentsEditText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:layout_weight="1.5"
-            android:background="@drawable/edit_text_bg"
-            android:hint="@string/pashuStory_addCommentPlaceholder"
-            android:padding="10dp" />
+        <ImageView
+            android:id="@+id/bazaar_successIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/ic_check_circle"
+            android:visibility="gone" />
 
-        <Button
-            android:id="@+id/submitStoryCommentButton"
-            android:layout_width="0dp"
+        <ProgressBar
+            android:id="@+id/bazaar_loadDataProgressBar"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginStart="5dp"
-            android:layout_weight="0.5"
-            android:background="@drawable/registration_btn_bg"
-            android:text="@string/pashuStory_addCommentCTA"
-            android:textColor="@color/white"
-            android:textSize="@dimen/button" />
+            android:indeterminate="true"
+            android:progress="0" />
 
-
+        <TextView
+            android:id="@+id/bazaar_progressDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:text="@string/progressDescription"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/caption" />
     </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/commentsDataLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_below="@id/sheetpull">
+
+        <RelativeLayout
+            android:id="@+id/commentsHeaderLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true">
+            <TextView
+                android:id="@+id/commentsHeading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pashuStory_commentHeading"
+                android:textSize="@dimen/body2"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_alignParentStart="true"
+            />
+
+            <ImageButton
+                android:id="@+id/commentsCloseButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_close"
+                android:background="@android:color/transparent"
+                android:layout_alignParentEnd="true" />
+        </RelativeLayout>
+
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/comments_rv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/addCommentLayout"
+            android:layout_below="@id/commentsHeaderLayout"
+            android:layout_marginHorizontal="10dp"/>
+
+        <LinearLayout
+            android:id="@+id/addCommentLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="15dp"
+            android:weightSum="2">
+
+            <EditText
+                android:id="@+id/commentsEditText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
+                android:layout_weight="1.5"
+                android:background="@drawable/edit_text_bg"
+                android:hint="@string/pashuStory_addCommentPlaceholder"
+                android:padding="10dp" />
+
+            <Button
+                android:id="@+id/submitStoryCommentButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="5dp"
+                android:layout_weight="0.5"
+                android:background="@drawable/registration_btn_bg"
+                android:text="@string/pashuStory_addCommentCTA"
+                android:textColor="@color/white"
+                android:textSize="@dimen/button" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/nullCommentsPlaceholder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_above="@id/addCommentLayout"
+            android:layout_below="@id/commentsHeaderLayout"
+            android:gravity="center"
+            android:visibility="gone">
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/app_icon" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/body2"
+                android:text="@string/comment_null"
+                android:textColor="@color/black"
+                android:layout_marginTop="10dp"
+                android:textAlignment="center"
+                android:maxLines="2"/>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+
 
     <View
         android:id="@+id/emptyView"

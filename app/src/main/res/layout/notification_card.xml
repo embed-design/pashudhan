@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:weightSum="3"
+    android:paddingHorizontal="10dp"
+    android:paddingVertical="15dp">
+
+    <ImageView
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_weight="0.8"
+        android:src="@drawable/app_icon" />
+
+    <RelativeLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2.2"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:text="Notification Title"
+            android:textSize="@dimen/body"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:id="@+id/notificationTitle"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/notificationTitle"
+            android:text="Notification Message"
+            android:textSize="@dimen/caption"
+            android:textColor="@color/black"
+            android:id="@+id/notificationMessage"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/notificationMessage"
+            android:text="Notification Time"
+            android:textSize="12sp"
+            android:textColor="@color/accent"
+            android:id="@+id/notificationTime"
+            />
+
+
+
+    </RelativeLayout>
+
+
+</LinearLayout>

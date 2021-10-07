@@ -32,7 +32,6 @@ class EmojiFragment : BottomSheetDialogFragment() {
         emojiRV = view.findViewById(R.id.emoji_rv)
         emojiRV.layoutManager = GridLayoutManager(activity?.applicationContext, 4)
 
-        emojiRV.setHasFixedSize(true)
 
         emojiList = resources.getStringArray(R.array.emojis)
 
