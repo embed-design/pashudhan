@@ -39,6 +39,6 @@ Pashudhan is a POC mobile application built to demonstrate the market for cattle
 `Interfaces` - NotificationAPI Interface is created in this directory. Can be used further to create more interfaces. 
 
 ## :handshake: Contribution
-Currently the repo is not open for open source contribution. In case you still wish to make a contribution, please contact [Omkar Kulkarni]().
+Currently the repo is not open for open source contribution. In case you still wish to make a contribution, please contact [Omkar Kulkarni](https://www.linkedin.com/in/omkar-kulkarni-10594953).
 
 
